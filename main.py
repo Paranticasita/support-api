@@ -235,8 +235,17 @@ async def analyze_tickets_with_ai(tickets: List[Dict[str, Any]]) -> Dict[str, An
         
         # JSONパース試行
         import json
+        import re
         try:
-            analysis_result = json.loads(response.text)
+            # JSONコードブロックを除去
+            clean_text = response.text
+            # ```json から ``` までを削除
+            clean_text = re.sub(r'```json\s*', '', clean_text)
+            clean_text = re.sub(r'```.*$', '', clean_text, flags=re.MULTILINE)
+            # 先頭末尾の空白を削除
+            clean_text = clean_text.strip()
+            
+            analysis_result = json.loads(clean_text)
         except:
             # パースに失敗した場合のフォールバック
             analysis_result = {
@@ -279,8 +288,15 @@ async def analyze_single_ticket(ticket: Dict[str, Any]) -> Dict[str, Any]:
         response = model.generate_content(prompt)
         
         import json
+        import re
         try:
-            insight = json.loads(response.text)
+            # JSONコードブロックを除去
+            clean_text = response.text
+            clean_text = re.sub(r'```json\s*', '', clean_text)
+            clean_text = re.sub(r'```.*$', '', clean_text, flags=re.MULTILINE)
+            clean_text = clean_text.strip()
+            
+            insight = json.loads(clean_text)
         except:
             insight = {
                 "urgency": "中",
