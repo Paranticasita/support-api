@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>サポートお問い合わせ</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .form-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        .user-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+        .submit-btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-btn:hover {
+            background: #0056b3;
+        }
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>サポートお問い合わせ</h1>
+        
+        <div class="user-info">
+            <strong>ログイン中:</strong> {{ user_info.email }} ({{ user_info.user_id }})
+        </div>
+
+        <form id="supportForm">
+            <div class="form-group">
+                <label for="category">カテゴリー</label>
+                <select id="category" name="category" required>
+                    <option value="general">一般的な質問</option>
+                    <option value="technical">技術的な問題</option>
+                    <option value="bug">バグ報告</option>
+                    <option value="feature">機能リクエスト</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">件名</label>
+                <input type="text" id="subject" name="subject" required>
+            </div>
+
+            <div class="form-group">
+                <label for="message">詳細</label>
+                <textarea id="message" name="message" placeholder="問題の詳細をご記入ください..." required></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">送信</button>
+        </form>
+
+        <div id="successMessage" class="success-message">
+            お問い合わせが正常に送信されました。チケットID: <span id="ticketId"></span>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('supportForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                user_id: '{{ user_info.user_id }}',
+                email: '{{ user_info.email }}',
+                category: document.getElementById('category').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            try {
+                const response = await fetch('/api/tickets', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('ticketId').textContent = result.ticket_id;
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('supportForm').reset();
+                } else {
+                    alert('エラーが発生しました: ' + result.message);
+                }
+            } catch (error) {
+                alert('送信に失敗しました: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
