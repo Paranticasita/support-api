@@ -34,8 +34,14 @@ templates = Jinja2Templates(directory="templates")
 # Firestore初期化（独立）
 firestore_client = firestore.Client()
 
-# Gemini AI初期化
-genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
+# Gemini AI初期化（Google Cloud認証使用）
+import google.auth
+import google.auth.transport.requests
+from google.oauth2 import service_account
+
+# Google Cloud認証を使用
+credentials, project = google.auth.default()
+genai.configure(credentials=credentials)
 model = genai.GenerativeModel('gemini-2.0-flash-exp')
 
 class SupportTicket(BaseModel):
