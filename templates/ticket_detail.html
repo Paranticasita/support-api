@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>チケット詳細 - {{ ticket.subject }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            line-height: 1.6;
+        }
+        .header {
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .back-btn {
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .back-btn:hover {
+            background: #545b62;
+        }
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        .ticket-main {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .ticket-header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        .ticket-content {
+            padding: 20px;
+        }
+        .ticket-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-open { background: #ffeaa7; color: #2d3436; }
+        .status-closed { background: #00b894; color: white; }
+        .status-in-progress { background: #74b9ff; color: white; }
+        .category-tag {
+            background: #e17055;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        .message-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        .responses-section {
+            margin-top: 30px;
+        }
+        .response-item {
+            background: #e3f2fd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #2196f3;
+        }
+        .response-meta {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        .ai-sidebar {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+        .ai-header {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+        }
+        .ai-content {
+            padding: 20px;
+        }
+        .ai-section {
+            margin-bottom: 20px;
+        }
+        .ai-section h4 {
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        .urgency-high { color: #dc3545; font-weight: bold; }
+        .urgency-medium { color: #ffc107; font-weight: bold; }
+        .urgency-low { color: #28a745; font-weight: bold; }
+        .improvement-list {
+            list-style: none;
+            padding: 0;
+        }
+        .improvement-list li {
+            background: #f8f9fa;
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+        .response-form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+            height: 120px;
+        }
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .submit-btn {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .submit-btn:hover {
+            background: #0056b3;
+        }
+        .success-message {
+            display: none;
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <a href="/admin" class="back-btn">← ダッシュボードに戻る</a>
+            <h1>チケット詳細</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-grid">
+            <!-- メインコンテンツ -->
+            <div class="ticket-main">
+                <div class="ticket-header">
+                    <h2>{{ ticket.subject }}</h2>
+                    <span class="category-tag">{{ ticket.category }}</span>
+                </div>
+                
+                <div class="ticket-content">
+                    <div class="ticket-meta">
+                        <div class="meta-item">
+                            <span>👤</span>
+                            <span><strong>ユーザー:</strong> {{ ticket.email }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>🆔</span>
+                            <span><strong>ユーザーID:</strong> {{ ticket.user_id }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>📅</span>
+                            <span><strong>作成日:</strong> {{ ticket.created_at.strftime('%Y/%m/%d %H:%M') if ticket.created_at else '不明' }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>🔄</span>
+                            <span><strong>ステータス:</strong> <span class="status-badge status-{{ ticket.status }}">{{ ticket.status }}</span></span>
+                        </div>
+                        {% if ticket.analysis_id %}
+                        <div class="meta-item">
+                            <span>🔬</span>
+                            <span><strong>分析ID:</strong> {{ ticket.analysis_id }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <span>🎫</span>
+                            <span><strong>チケットID:</strong> {{ ticket.ticket_id }}</span>
+                        </div>
+                    </div>
+
+                    <div class="message-content">
+                        <h3>📝 お問い合わせ内容</h3>
+                        <p>{{ ticket.message }}</p>
+                    </div>
+
+                    <!-- 返信履歴 -->
+                    {% if ticket.responses %}
+                    <div class="responses-section">
+                        <h3>💬 返信履歴</h3>
+                        {% for response in ticket.responses %}
+                        <div class="response-item">
+                            <div class="response-meta">
+                                {{ response.responder }} - {{ response.created_at.strftime('%Y/%m/%d %H:%M') if response.created_at else '不明' }}
+                            </div>
+                            <p>{{ response.message }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- AI分析サイドバー -->
+            <div class="ai-sidebar">
+                <div class="ai-header">
+                    <h3>🤖 AI分析</h3>
+                </div>
+                <div class="ai-content">
+                    <div class="ai-section">
+                        <h4>緊急度</h4>
+                        <span class="urgency-{{ ai_insight.urgency|lower }}">
+                            {{ ai_insight.urgency }}
+                        </span>
+                    </div>
+
+                    <div class="ai-section">
+                        <h4>推奨カテゴリ</h4>
+                        <p>{{ ai_insight.category_suggestion }}</p>
+                    </div>
+
+                    <div class="ai-section">
+                        <h4>推奨返信内容</h4>
+                        <div style="background: #f0f8ff; padding: 10px; border-radius: 4px; font-size: 13px;">
+                            {{ ai_insight.response_suggestion }}
+                        </div>
+                    </div>
+
+                    <div class="ai-section">
+                        <h4>関連改善提案</h4>
+                        <ul class="improvement-list">
+                            {% for improvement in ai_insight.related_improvements %}
+                            <li>💡 {{ improvement }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 返信フォーム -->
+        <div class="response-form">
+            <h3>📤 返信する</h3>
+            <form id="responseForm">
+                <div class="form-group">
+                    <label for="message">返信内容</label>
+                    <textarea id="message" name="message" placeholder="お客様への返信内容を入力してください..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="status">ステータス</label>
+                    <select id="status" name="status">
+                        <option value="open" {% if ticket.status == 'open' %}selected{% endif %}>Open (未解決)</option>
+                        <option value="in-progress" {% if ticket.status == 'in-progress' %}selected{% endif %}>In Progress (対応中)</option>
+                        <option value="closed" {% if ticket.status == 'closed' %}selected{% endif %}>Closed (解決済み)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="submit-btn">返信を送信</button>
+                <div id="successMessage" class="success-message">
+                    返信が正常に送信されました。
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('responseForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                message: document.getElementById('message').value,
+                status: document.getElementById('status').value,
+                responder: 'admin'
+            };
+
+            try {
+                const response = await fetch('/admin/ticket/{{ ticket.id }}/respond', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    document.getElementById('successMessage').style.display = 'block';
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                } else {
+                    alert('エラーが発生しました: ' + result.message);
+                }
+            } catch (error) {
+                alert('送信に失敗しました: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
