@@ -237,13 +237,20 @@ async def analyze_tickets_with_ai(tickets: List[Dict[str, Any]]) -> Dict[str, An
         import json
         import re
         try:
-            # JSONコードブロックを除去
+            # JSONコードブロックを除去（より厳密なパターン）
             clean_text = response.text
-            # ```json から ``` までを削除
+            # ```json { から始まるパターンを除去
             clean_text = re.sub(r'```json\s*', '', clean_text)
-            clean_text = re.sub(r'```.*$', '', clean_text, flags=re.MULTILINE)
-            # 先頭末尾の空白を削除
+            clean_text = re.sub(r'```\s*$', '', clean_text)
+            # 改行による```も除去
+            clean_text = re.sub(r'```[^{]*', '', clean_text)
             clean_text = clean_text.strip()
+            
+            # { で始まらない場合は { を探す
+            if not clean_text.startswith('{'):
+                match = re.search(r'\{.*\}', clean_text, re.DOTALL)
+                if match:
+                    clean_text = match.group(0)
             
             analysis_result = json.loads(clean_text)
         except:
@@ -290,11 +297,18 @@ async def analyze_single_ticket(ticket: Dict[str, Any]) -> Dict[str, Any]:
         import json
         import re
         try:
-            # JSONコードブロックを除去
+            # JSONコードブロックを除去（より厳密なパターン）
             clean_text = response.text
             clean_text = re.sub(r'```json\s*', '', clean_text)
-            clean_text = re.sub(r'```.*$', '', clean_text, flags=re.MULTILINE)
+            clean_text = re.sub(r'```\s*$', '', clean_text)
+            clean_text = re.sub(r'```[^{]*', '', clean_text)
             clean_text = clean_text.strip()
+            
+            # { で始まらない場合は { を探す
+            if not clean_text.startswith('{'):
+                match = re.search(r'\{.*\}', clean_text, re.DOTALL)
+                if match:
+                    clean_text = match.group(0)
             
             insight = json.loads(clean_text)
         except:
